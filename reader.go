@@ -237,6 +237,10 @@ func (r *Reader) AttributeCount() int {
 // ReadAttribute returns the attribute value at row for field in
 // the DBF table as a string. Both values starts at 0.
 func (r *Reader) ReadAttribute(row int, field int) string {
+	return strings.Trim(string(r.ReadAttributeAsByte(row, field)), " ")
+}
+
+func (r *Reader) ReadAttributeAsByte(row int, field int) []byte {
 	r.openDbf() // make sure we have a dbf file to read from
 	seekTo := 1 + int64(r.dbfHeaderLength) + (int64(row) * int64(r.dbfRecordLength))
 	for n := 0; n < field; n++ {
@@ -245,5 +249,5 @@ func (r *Reader) ReadAttribute(row int, field int) string {
 	r.dbf.Seek(seekTo, io.SeekStart)
 	buf := make([]byte, r.dbfFields[field].Size)
 	r.dbf.Read(buf)
-	return strings.Trim(string(buf[:]), " ")
+	return buf[:]
 }
