@@ -1,6 +1,7 @@
 package shp
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -143,6 +144,24 @@ func newShape(shapetype ShapeType) (Shape, error) {
 	default:
 		return nil, fmt.Errorf("Unsupported shape type: %v", shapetype)
 	}
+}
+
+func UnpackShape(b []byte) (Shape, error) {
+	var shapetype ShapeType
+	er := &errReader{Reader: bytes.NewReader(b)}
+	binary.Read(er, binary.LittleEndian, &shapetype)
+	if er.e != nil {
+		return nil, fmt.Errorf("Error decoding shape type: %v", er.e)
+	}
+	shape, err := newShape(shapetype)
+	if err != nil {
+		return nil, fmt.Errorf("Error decoding shape type: %v", err)
+	}
+	shape.read(er)
+	if er.e != nil {
+		return nil, fmt.Errorf("Error while reading shape: %v", er.e)
+	}
+	return shape, nil
 }
 
 // Next reads in the next Shape in the Shapefile, which

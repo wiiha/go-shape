@@ -1,7 +1,9 @@
 package shp
 
 import (
+	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"strings"
 )
@@ -79,6 +81,50 @@ type Shape interface {
 
 	read(io.Reader)
 	write(io.Writer)
+}
+
+// PackShape packs a shape into a byte slice.
+func PackShape(s Shape) ([]byte, error) {
+	// 1. create a byte slice and a buffer
+	b := []byte{}
+	buf := bytes.NewBuffer(b)
+	// 3. identify the shape type
+	switch s.(type) {
+	case *Null:
+		binary.Write(buf, binary.LittleEndian, int32(NULL))
+	case *Point:
+		binary.Write(buf, binary.LittleEndian, int32(POINT))
+	case *PolyLine:
+		binary.Write(buf, binary.LittleEndian, int32(POLYLINE))
+	case *Polygon:
+		binary.Write(buf, binary.LittleEndian, int32(POLYGON))
+	case *MultiPoint:
+		binary.Write(buf, binary.LittleEndian, int32(MULTIPOINT))
+	case *PointZ:
+		binary.Write(buf, binary.LittleEndian, int32(POINTZ))
+	case *PolyLineZ:
+		binary.Write(buf, binary.LittleEndian, int32(POLYLINEZ))
+	case *PolygonZ:
+		binary.Write(buf, binary.LittleEndian, int32(POLYGONZ))
+	case *MultiPointZ:
+		binary.Write(buf, binary.LittleEndian, int32(MULTIPOINTZ))
+	case *PointM:
+		binary.Write(buf, binary.LittleEndian, int32(POINTM))
+	case *PolyLineM:
+		binary.Write(buf, binary.LittleEndian, int32(POLYLINEM))
+	case *PolygonM:
+		binary.Write(buf, binary.LittleEndian, int32(POLYGONM))
+	case *MultiPointM:
+		binary.Write(buf, binary.LittleEndian, int32(MULTIPOINTM))
+	case *MultiPatch:
+		binary.Write(buf, binary.LittleEndian, int32(MULTIPATCH))
+	default:
+		return nil, fmt.Errorf("unsupported shape type: %T", s)
+	}
+	// 3. call write on the shape
+	s.write(buf)
+	// 4. return the byte slice
+	return buf.Bytes(), nil
 }
 
 // Null is an empty shape.

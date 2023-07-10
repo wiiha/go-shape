@@ -20,3 +20,35 @@ func TestBoxExtend(t *testing.T) {
 		t.Errorf("a.MaxY = %v, want %v", a.MaxY, c.MaxY)
 	}
 }
+
+func TestPackShape(t *testing.T) {
+	p := &Point{1, 2}
+	b, err := PackShape(p)
+	if err != nil {
+		t.Fatalf("PackShape failed: %v", err)
+	}
+	if b == nil {
+		t.Fatalf("PackShape returned nil")
+	}
+	t.Logf("PackShape returned %v", b)
+
+	// Unpack it
+	ns, err := UnpackShape(b)
+	if err != nil {
+		t.Fatalf("UnpackShape failed: %v", err)
+	}
+	if ns == nil {
+		t.Fatalf("UnpackShape returned nil")
+	}
+	p2, ok := ns.(*Point)
+	if !ok {
+		t.Fatalf("UnpackShape returned %T, want *Point", ns)
+	}
+	if p2.X != p.X {
+		t.Errorf("p2.X = %v, want %v", p2.X, p.X)
+	}
+	if p2.Y != p.Y {
+		t.Errorf("p2.Y = %v, want %v", p2.Y, p.Y)
+	}
+
+}
